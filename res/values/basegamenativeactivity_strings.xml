@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="basegamenativeactivity_signin_successed">sign in success!!</string>
+    <string name="basegamenativeactivity_signin_failed">sign in error</string>
+</resources>

@@ -8,6 +8,7 @@ import com.google.android.gms.plus.PlusClient;
 import android.app.NativeActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 /**
  * BaseGameActivityのNativeActivity版。
@@ -35,6 +36,8 @@ public abstract class BaseGameNativeActivity extends NativeActivity  implements 
 	protected String mDebugTag = BaseGameNativeActivity.class.getSimpleName();
 	protected boolean mDebugLog = false;
 
+	/** 全リーダーボード表示後のresultCode */
+	public static int SHOW_LEADERBOARD_RESULT_CODE = 1111;
 
 	protected BaseGameNativeActivity() {
 		super();
@@ -59,6 +62,8 @@ public abstract class BaseGameNativeActivity extends NativeActivity  implements 
 			mHelper.enableDebugLog(mDebugLog, mDebugTag);
 		}
 		mHelper.setup(this, mRequestedClients, mAdditionalScopes);
+		
+		GameNativeJniHelper.init(this);
 	}
 
 	@Override
@@ -85,6 +90,30 @@ public abstract class BaseGameNativeActivity extends NativeActivity  implements 
 		}
 	}
 
+    /**
+     * Called to notify us that sign in failed. Notice that a failure in sign in is not
+     * necessarily due to an error; it might be that the user never signed in, so our
+     * attempt to automatically sign in fails because the user has not gone through
+     * the authorization flow. So our reaction to sign in failure is to show the sign in
+     * button. When the user clicks that button, the sign in process will start/resume.
+     */
+    @Override
+    public void onSignInFailed() {
+    	// エラー後に呼ばれるのでエラーメッセージとかは不要
+    	// リトライ方法を提示してあげるべき
+    }
+
+    /**
+     * Called to notify us that sign in succeeded. We react by loading the loot from the
+     * cloud and updating the UI to show a sign-out button.
+     */
+    @Override
+    public void onSignInSucceeded() {
+    	Toast.makeText(this, 
+    			getString(R.string.basegamenativeactivity_signin_successed), 
+    			Toast.LENGTH_LONG).show();
+    }
+    
 	protected GamesClient getGamesClient() {
 		return mHelper.getGamesClient();
 	}
@@ -147,5 +176,13 @@ public abstract class BaseGameNativeActivity extends NativeActivity  implements 
 
 	protected GameHelper.SignInFailureReason getSignInError() {
 		return mHelper.getSignInError();
+	}
+	
+	protected void submitBoardScore(int boardResId, long score) {
+		getGamesClient().submitScore(getString(boardResId), score);
+	}
+	
+	protected void showAllLeaderBoard() {
+		startActivityForResult(getGamesClient().getAllLeaderboardsIntent(), SHOW_LEADERBOARD_RESULT_CODE);
 	}
 }
